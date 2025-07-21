@@ -1,0 +1,57 @@
+{
+  "theme": "vs-dark",
+  "fontSize": 15,
+  "fontFamily": "'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', Monaco, 'Roboto Mono', monospace",
+  "fontLigatures": true,
+  "tabSize": 4,
+  "insertSpaces": true,
+  "wordWrap": "on",
+  "wrappingIndent": "same",
+  "lineNumbers": "on",
+  "lineNumbersMinChars": 3,
+  "renderWhitespace": "selection",
+  "renderControlCharacters": false,
+  "minimap": {
+    "enabled": true,
+    "side": "right",
+    "size": "proportional",
+    "showSlider": "mouseover"
+  },
+  "scrollbar": {
+    "vertical": "auto",
+    "horizontal": "auto",
+    "verticalScrollbarSize": 8,
+    "horizontalScrollbarSize": 8
+  },
+  "cursorBlinking": "smooth",
+  "cursorSmoothCaretAnimation": true,
+  "smoothScrolling": true,
+  "mouseWheelZoom": true,
+  "copyWithSyntaxHighlighting": false,
+  "bracketPairColorization": {
+    "enabled": true
+  },
+  "guides": {
+    "bracketPairs": true,
+    "indentation": true
+  },
+  "suggest": {
+    "showKeywords": true,
+    "showSnippets": true,
+    "showFunctions": true,
+    "showVariables": true
+  },
+  "quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+  "parameterHints": {
+    "enabled": true
+  },
+  "autoClosingBrackets": "always",
+  "autoClosingQuotes": "always",
+  "autoSurround": "languageDefined",
+  "formatOnPaste": true,
+  "formatOnType": true
+}

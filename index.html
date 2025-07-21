@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syther Editor</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-tabs">
+                <button class="sidebar-tab active" data-tab="scripts">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"/>
+                        <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Explorer</span>
+                </button>
+                <button class="sidebar-tab" data-tab="ai">
+                    <img src="https://files.catbox.moe/whrcur.webp" alt="AI" width="16" height="16" style="border-radius: 50%;">
+                    <span>AI Assistant</span>
+                </button>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="tab-content active" id="scriptsContent">
+                    <div class="scripts-list" id="scriptsList">
+                    </div>
+                </div>
+
+                <div class="tab-content" id="aiContent">
+                    <div class="ai-placeholder">
+                        <img src="https://files.catbox.moe/whrcur.webp" alt="AI Assistant" width="48" height="48" style="border-radius: 50%;">
+                        <p>AI-powered code assistance and suggestions will be available soon.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-resize-handle" id="sidebarResizeHandle"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="tab-bar" id="tabBar">
+                <div class="tabs-scroll-container">
+                    <button class="tab-scroll-btn left" id="tabScrollLeft">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <div class="tabs-container" id="tabsContainer">
+                    </div>
+                    <button class="tab-scroll-btn right" id="tabScrollRight">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="tab-controls">
+                    <button class="new-tab-btn" id="newTabBtn">
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 1V15M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor-wrapper">
+                <div id="editor"></div>
+                
+                <div class="error-panel" id="errorPanel">
+                    <div class="error-header">
+                        <div class="error-title">
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="2"/>
+                                <path d="M8 4V8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M8 12H8.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                            Issues
+                        </div>
+                        <button class="error-close" id="errorClose">
+                            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                                <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="error-list" id="errorList"></div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div class="status-left">
+                    <div class="status-item">
+                        <div class="status-dot"></div>
+                        Lua/Luau
+                    </div>
+                    <div class="status-item" id="lineCol">Ln 1, Col 1</div>
+                    <div class="status-item" id="errorCount">No issues</div>
+                </div>
+                <div class="status-right">
+                    <div class="status-item" id="charCount">0 chars</div>
+                    <div class="status-item">UTF-8</div>
+                    <div class="status-item" id="autocompleteStatus">IntelliSense</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Rename</h3>
+                <button class="modal-close" id="modalClose">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="modalInput" id="modalLabel">Name:</label>
+                    <input type="text" id="modalInput" class="modal-input" placeholder="Enter name...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="modalCancel">Cancel</button>
+                <button class="modal-btn primary" id="modalConfirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="delete-modal-overlay" id="deleteModalOverlay">
+        <div class="delete-modal" id="deleteModal">
+            <div class="delete-modal-header">
+                <div class="delete-modal-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="delete-modal-title-section">
+                    <h3 class="delete-modal-title" id="deleteModalTitle">Delete Item</h3>
+                    <p class="delete-modal-subtitle">This action cannot be undone</p>
+                </div>
+                <button class="delete-modal-close" id="deleteModalClose">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="delete-modal-body">
+                <div class="delete-warning">
+                    <div class="delete-warning-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="delete-warning-content">
+                        <h4 class="delete-warning-title">Permanent Deletion</h4>
+                        <p class="delete-warning-text">This item will be permanently deleted and cannot be recovered. Make sure you have saved any important changes before proceeding.</p>
+                    </div>
+                </div>
+                
+                <div class="delete-item-info">
+                    <div class="delete-item-icon" id="deleteItemIcon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2"/>
+                            <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="delete-item-details">
+                        <h4 class="delete-item-name" id="deleteItemName">Item Name</h4>
+                        <p class="delete-item-type" id="deleteItemType">File</p>
+                    </div>
+                </div>
+            </div>
+            <div class="delete-modal-footer">
+                <button class="delete-modal-btn cancel" id="deleteModalCancel">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Cancel
+                </button>
+                <button class="delete-modal-btn delete" id="deleteModalConfirm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="context-menu" id="contextMenu">
+        <div class="context-item" data-action="save">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="1.2"/>
+                <polyline points="17,21 17,13 7,13 7,21" stroke="currentColor" stroke-width="1.2"/>
+                <polyline points="7,3 7,8 15,8" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Save
+        </div>
+        <div class="context-item" data-action="rename">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <path d="M8.5 2.5L11.5 5.5L4 13H1V10L8.5 2.5Z" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Rename
+        </div>
+        <div class="context-item" data-action="duplicate">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="2" width="8" height="8" stroke="currentColor" stroke-width="1.2"/>
+                <rect x="4" y="4" width="8" height="8" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Duplicate
+        </div>
+        <div class="context-separator"></div>
+        <div class="context-item" data-action="close">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Close
+        </div>
+        <div class="context-item" data-action="closeOthers">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Close Others
+        </div>
+    </div>
+
+    <div class="context-menu" id="explorerContextMenu">
+        <div class="context-item" data-action="newFile">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.2"/>
+                <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M12 11V17M9 14H15" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            New File
+        </div>
+        <div class="context-item" data-action="newFolder">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M12 11V17M9 14H15" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            New Folder
+        </div>
+    </div>
+
+    <div class="context-menu" id="fileContextMenu">
+        <div class="context-item" data-action="rename">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <path d="M8.5 2.5L11.5 5.5L4 13H1V10L8.5 2.5Z" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Rename
+        </div>
+        <div class="context-item" data-action="duplicate">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <rect x="2" y="2" width="8" height="8" stroke="currentColor" stroke-width="1.2"/>
+                <rect x="4" y="4" width="8" height="8" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Duplicate
+        </div>
+        <div class="context-separator"></div>
+        <div class="context-item" data-action="delete">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6" stroke="currentColor" stroke-width="1.2"/>
+            </svg>
+            Delete
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
