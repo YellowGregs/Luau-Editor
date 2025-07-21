@@ -1,7 +1,7 @@
 export class AIAssistant {
     constructor() {
         // alt acc api key so idc what you do with it
-        this.apiKey = 'AIzaSyBledWQHMNkf8ssrW5_hm9xxl51D4gr98Y';
+        this.apiKey = ''; //put your Gemini API key 
         this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
         this.isLoading = false;
         this.conversationHistory = [];
