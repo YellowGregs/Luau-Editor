@@ -283,7 +283,6 @@ export function getLuaLanguageConfig(monaco) {
                         sortText: '2' + type
                     })),
 
-                    // Enhanced smart snippets
                     {
                         label: 'function',
                         kind: monaco.languages.CompletionItemKind.Snippet,
